@@ -1,0 +1,147 @@
+20190223
+
+- the "Compressed VRS" option is no longer used and removed
+
++ fixed some bugs
+
++ clearing the code
+
+
+20180311
+
+ICAO24 validation settings for Mode S and ADS-B:
+
++ added --valid-modes <arg> - for Mode S these values indicate how many times an aircraft's ICAO24 has to be seen over a given number of seconds in messages that can be tested for corruption before it is assumed to be correct in this cycle of validation.
+The default values are 0:5, max 100:30.
+The default values are 0 messages over 5 seconds and modesmixer2 will never accept an ICAO24 from a message where it cannot be sure that the parity is correct.
+Also the filter simultaneously uses other current flight parameters like altitude and number of received messages.
+
++ added --valid-adsb <arg> - for ADS-B these values indicate how many times an aircraft's ICAO24 has to be seen over a given number of seconds in messages that can be tested for corruption before it is assumed to be correct in this cycle of validation.
+The default values are 6:60, max. 10:60.
+Also the filter simultaneously uses other current flight parameters like altitude, ground speed, heading and number of received messages. 
+
+
+- no longer used options:
+  --filter-count arg        Filter min count (default: 6)
+  --filter-time arg         Filter min time, sec (default: 60)
+
+
++ added input format "Compressed VRS" for compatibility with VirtualRadarServer with automatic recognition.
+This version has a limitation of the output "Compressed VRS" format. It can be used if a data were received from incoming messages MSG or Compressed VRS.
+
++ Some changes in the interface
+
+
+20170506
+
++ fixed some bugs
++ added option --dbro for to open a read-only database
++ added option --keep for keeping connection of MLAT data in BEAST FA format
++ added capability to display charts for altitude and speed
+
+
+Since June 2016, Google Maps requires a special Google Maps API key. Without this key, you cannot display Google Maps in ModeSMixer2.
+Before you can set this API key in your ModeSMixer2, you’ll need to generate it.
+You must have a Google account to generate a key for Google Maps Javascript API. Go to the Google API Console https://developers.google.com/maps/documentation/javascript/ and click ‘Get A Key’.
+If you want to use an existing project, please select it from the list.
+Otherwise, select ‘Create a new project’ and enter a project name, for example, modesmixer2.
+Than click ‘Enable the API’ (existing projects) or ‘Create and Enable API’ for new projects.
+Copy the API key you generated from the Google Maps API Manager and add to command line the option "--google-key XXXX", where XXXX is your API key.
+
+
+This is a console (command line) program that can do:
+- merging data from any number of ModeS tcp-sources: binBEAST, AVR, AVRMLAT, SBS30006, SBS10001, MSG and/or physical serial devices - COM*-ports in Windows or /dev/tty's in Linux to merged output stream.  This stream, in turn, may be issued to the network in various formats simultaneously. Data format of input tcp-sources is automatically recognized. Incoming data may be both inConnect (pull from <address>:<port>) and inServer (listen data on own TCP-port <port>).
+- decoding/transcoding the input data to different formats to output: binBEAST, AVR, AVRMLAT, SBS30006, SBS10001 and MSG as required by user.
+- splitting output data stream for any number of IP-clients in the following formats: binBEAST, AVR, AVRMLAT, SBS30006, SBS10001 and MSG. The output data can be both outConnect (push <address>:<port>) and outServer (listen request on own TCP-port <port>).
+
+
+Example:
+./modesmixer2 --google-key Zxxxxxxxxxxxxxx --inConnect 192.168.0.2:50040 --inSerial COM1:3000000:hardware --inConnect 192.168.0.170:10001 --outServer msg:30003 --outServer sbs10001:10001 --globes 31008:table2:UUDD --inServerId 44022:Label --add-points 37.025:104.567:IWP1 37.080:106.567:IWP2 --outServer beastmlat:30105 --outConnect msgmlat:192.168.1.200:30106 --valid-modes 0:5
+
+
+Highly recommend to specify the option --location <arg> of your receiver's location.
+This value will be used to correctly decode the positions of aircraft when missing odd or even frames in the Compact Position Reporting (CPR) pair.
+It does not require high precision coordinates, just specify values in decimal format with one or two decimal places (for example: --location 32.51:104.98)
+
+
+./modesmixer2 --help
+ModeSMixer2 v.20190223
+Program options:
+  -h [ --help ]             This help message
+  --inConnect arg           Input connector. Format: host:port
+  --inConnectId arg         Input connector with ID. Format: host:port:id
+  --inServer arg            Input server. Format: port
+  --inServerId arg          Input server with Id. Format: port:id
+  --inServerUdp arg         Input udp server. Format: port
+  --inSerial arg            Input serial. Format: port[:speed[:flow_control]]
+                            FlowControl: none,software,hardware
+  --outConnect arg          Output connector. Format: type:host:port
+                            Types: beast,avr,avrmlat,msg,sbs30006,beastmlat,msg
+                                  mlat
+  --outConnectId arg        Output connector with Id.
+                            Format: host:port[:name:lat:lon:TEXT:freq]
+  --outConnectUdp arg       Output udp connector. Format: type:host:port
+                            Types: beast,avr,avrmlat,msg,sbs30006
+  --outServer arg           Output server. Format: type:port
+                            Types: beast,avr,avrmlat,msg,sbs30006,sbs10001,fats
+                                  v,beastmlat,msgmlat
+  --globes arg              Enable Globe-S server. Format
+                            port:tablename:stationid
+  --web arg                 Enable Web Server on port (default: off)
+  --google-key arg          Google Maps key
+  --web-auth arg            Enable web auth username:password (default: off)
+  --disable-web-log         Disable Web Log (default: on)
+  --silhouettes arg         Set Silhouettes directory
+  --pictures arg            Set Aircraft Pictures directory
+  --db arg                  Set DB Filename
+  --dbro arg                Set DB filename for read-only using
+  --keep                    Enable Beast output keepalive message (default:
+                            off)
+  --frdb arg                Set FlightRoute DB Filename
+  --location arg            Receiver location Lat:Lon
+                            Example: --location 36.2:-115.3
+  --add-reference-point arg Add a new reference point for calculating distance
+                            and azimuth on a Google map
+                            Example: --add-reference-point 38.5:-114.6:[Label]
+  --add-points arg          Add an additional point (one or more) with
+                            coordinates on a Google map
+                            Example: --add-points 36.2:-115.3:[Label1]
+                            [38.5:-112.6:[Label2]] ...
+  --localtime               Set a Local time in output messages in MSG format
+                            (default: UTC)
+  --filter-expire arg       Filter expire time, sec (default: 20)
+  --valid-adsb arg          Set parameters of validation for ADS-B messages:
+                            msgs/seconds
+                            Example: --valid-adsb 1:2 (default 6:12, max 10:60)
+  --valid-modes arg         Set parameters of validation for Mode S messages:
+                            msgs/seconds
+                            If count set to 0, then only messages with correct
+                            parity will be accepted as valid
+                            Example: --valid-modes 10:4 (default 0:5, max
+                            100:30)
+  --filter-nocountry        Allow messages with unassigned ICAO24 addresses
+                            (default: off)
+  --filter-dup arg          Enable Duplicate filter (default: off)
+  --flight-expire-time arg  Flight expire time, seconds (default: 3600)
+  --log-noconsole           Disable logging to console (default: on)
+  --log-file arg            Enable logging to file (default: off)
+  --log-level arg           Set logging level 0..5 (default: 4)
+                            0 disabled, 1 error, 2 warning, 3 notice, 4 info
+                            5 debug
+
+  --metric                  Switch to metric system of distance measurement
+                            (default: imperial)
+
+
+If running the program with one option "--help" and a description of the command-line options will be printed on console.
+To stop the program, press the key combination <Control+C>
+
+After command <Control-C> for stop the program, be sure to wait for save data in the database file!
+On the console will display a special message. Depending on the number of observed aircraft the time for safely save data in the database can be up to one minute.
+
+
+The aircraft icon courtesy of Andrew Whewell http://www.virtualradarserver.com/
+The silhouettes courtesy of Ian Kirby (copyright) http://www.sbsbst.co.uk/iank/
+The WEB page "Charts" use Highcharts http://www.highcharts.com/
+
+/sergsero
